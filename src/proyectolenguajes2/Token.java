@@ -17,7 +17,6 @@ public class Token {
     public static final String CONSTANT = "Constant";
     public static final String MAIN_FUNCTION = "Main Function";
     public static final String UNKNOWN = "Unknown";
-    public static final String PUNCTUATION = "Punctuation";
 
     private String tokenType;
     private String tokenValue;

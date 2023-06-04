@@ -31,16 +31,21 @@ public class Parser {
     }
 
     private void declarationList() {
-        int cont =0;
         // declaration_list -> declaration declaration_list | ε
         while (currentTokenIndex < tokens.size()) {
             currentToken = tokens.get(currentTokenIndex);
-            System.out.println("Entro here"+ currentToken.toString());
-            cont++;
-            if(cont>1000){
-                break;
+            //System.out.println(currentToken.toString());
+            // Check for main function
+            if (match(Token.KEYWORD, "main")) {
+                System.out.println("Found main function");
+                match(Token.OPERATOR, "(");
+                match(Token.OPERATOR, ")");
+                match(Token.OPERATOR, "{");
+                statementList();
+                match(Token.OPERATOR, "}");
+            } else {
+                declaration();
             }
-            declaration();
         }
     }
 
@@ -48,7 +53,7 @@ public class Parser {
         // declaration -> type_specifier identifier ';'
         typeSpecifier();
         identifier();
-        match(Token.PUNCTUATION, ";");
+        match(Token.OPERATOR, ";");
     }
 
     private void typeSpecifier() {
@@ -67,6 +72,98 @@ public class Parser {
         } else {
             syntaxError = true;
         }
+    }
+
+    private void statementList() {
+        // statement_list -> statement statement_list | ε
+        while (currentTokenIndex < tokens.size() && !currentToken.getTokenValue().equals("}")) {
+            statement();
+        }
+    }
+
+    private void statement() {
+        // statement -> assignment_statement | if_statement | while_statement | declaration
+        if (match(Token.KEYWORD, "if")) {
+            ifStatement();
+        } else if (match(Token.KEYWORD, "while")) {
+            whileStatement();
+        } else if (match(Token.TYPE_SPECIFIER)) {
+            declaration();
+        } else {
+            assignmentStatement();
+        }
+    }
+
+    private void assignmentStatement() {
+        // assignment_statement -> identifier '=' expression ';'
+        identifier();
+        match(Token.OPERATOR, "=");
+        expression();
+        match(Token.OPERATOR, ";");
+    }
+
+    private void ifStatement() {
+        // if_statement -> 'if' '(' condition ')' '{' statement_list '}' 'else' '{' statement_list '}'
+        match(Token.OPERATOR, "(");
+        condition();
+        match(Token.OPERATOR, ")");
+        match(Token.OPERATOR, "{");
+        statementList();
+        match(Token.OPERATOR, "}");
+        match(Token.KEYWORD, "else");
+        match(Token.OPERATOR, "{");
+        statementList();
+        match(Token.OPERATOR, "}");
+    }
+
+    private void whileStatement() {
+        // while_statement -> 'while' '(' condition ')' '{' statement_list '}'
+        match(Token.OPERATOR, "(");
+        condition();
+        match(Token.OPERATOR, ")");
+        match(Token.OPERATOR, "{");
+        statementList();
+        match(Token.OPERATOR, "}");
+    }
+
+    private void condition() {
+        // condition -> expression relational_operator expression
+        expression();
+        relationalOperator();
+        expression();
+    }
+
+    private void expression() {
+        // expression -> term | expression additive_operator term
+        term();
+        while (match(Token.OPERATOR, "+") || match(Token.OPERATOR, "-")) {
+            term();
+        }
+    }
+
+    private void term() {
+        // term -> factor | term multiplicative_operator factor
+        factor();
+        while (match(Token.OPERATOR, "*") || match(Token.OPERATOR, "/")) {
+            factor();
+        }
+    }
+
+    private void factor() {
+        // factor -> identifier | constant | '(' expression ')'
+        if (match(Token.IDENTIFIER) || match(Token.CONSTANT)) {
+            // Do nothing
+        } else if (match(Token.OPERATOR, "(")) {
+            expression();
+            match(Token.OPERATOR, ")");
+        } else {
+            syntaxError = true;
+        }
+    }
+
+    private void relationalOperator() {
+        // relational_operator -> '<' | '>' | '==' | '!=' | '<=' | '>='
+        match(Token.OPERATOR);
     }
 
     private boolean match(String expectedType, String expectedValue) {
