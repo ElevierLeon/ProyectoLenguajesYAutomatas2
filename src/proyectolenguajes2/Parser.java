@@ -10,223 +10,83 @@ import java.util.ArrayList;
 public class Parser {
     private final ArrayList<Token> tokens;
     private int currentTokenIndex;
-    private TreeNode root;
+    private Token currentToken;
     private boolean syntaxError;
 
     public Parser(ArrayList<Token> tokens) {
         this.tokens = tokens;
         this.currentTokenIndex = 0;
-        this.root = null;
+        this.currentToken = null;
         this.syntaxError = false;
     }
 
-    public TreeNode parse() {
-        root = program();
-        if (root != null && currentTokenIndex == tokens.size() && !syntaxError) {
-            System.out.println("Program successfully parsed.");
-            return root;
+    public void parse() {
+        // Iniciar el análisis sintáctico
+        program();
+
+        // Verificar si se ha analizado toda la entrada sin errores
+        if (!syntaxError && currentTokenIndex == tokens.size()) {
+            System.out.println("Programa analizado sintácticamente correctamente.");
         } else {
-            System.out.println("Syntax error: Program is syntactically incorrect.");
-            if (syntaxError) {
-                int errorTokenIndex = currentTokenIndex - 1;
-                if (errorTokenIndex >= 0 && errorTokenIndex < tokens.size()) {
-                    Token errorToken = tokens.get(errorTokenIndex);
-                    System.out.println("Error at token: " + errorToken);
-                }
-            }
-            return null;
+            System.out.println("Error de sintaxis: Programa incorrecto.");
         }
     }
 
-    private TreeNode program() {
-        TreeNode declarationListNode = declarationList();
-        if (declarationListNode != null) {
-            return new TreeNode("program", declarationListNode);
-        }
-        return null;
+    private void program() {
+        // program -> declaration_list
+        declarationList();
     }
 
-    private TreeNode declarationList() {
-        TreeNode declarationNode = declaration();
-        if (declarationNode != null) {
-            TreeNode declarationListNode = declarationList();
-            if (declarationListNode != null) {
-                return new TreeNode("declaration_list", declarationNode, declarationListNode);
-            } else {
-                return new TreeNode("declaration_list", declarationNode);
-            }
+    private void declarationList() {
+        // declaration_list -> declaration declaration_list | ε
+        while (currentTokenIndex < tokens.size()) {
+            declaration();
         }
-        return null;
     }
 
-    private TreeNode declaration() {
-        TreeNode typeSpecifierNode = typeSpecifier();
-        if (typeSpecifierNode != null) {
-            TreeNode identifierNode = identifier();
-            if (identifierNode != null && match(Token.SEMICOLON)) {
-                return new TreeNode("declaration", typeSpecifierNode, identifierNode);
-            } else {
-                syntaxError = true;
-            }
+    private void declaration() {
+        // declaration -> type_specifier identifier ';'
+        typeSpecifier();
+        identifier();
+        match(Token.PUNCTUATION, ";");
+    }
+
+    private void typeSpecifier() {
+        // type_specifier -> 'int' | 'float' | 'char' | 'double'
+        if (currentToken.getTokenType().equals(Token.TYPE_SPECIFIER)) {
+            currentTokenIndex++;
         } else {
-            syntaxError = true;
+            syntaxError();
         }
-        return null;
     }
 
-    private TreeNode typeSpecifier() {
-        if (match(Token.INT) || match(Token.FLOAT) || match(Token.CHAR) || match(Token.DOUBLE)) {
-            return new TreeNode("type_specifier", previousToken().getTokenValue());
-        }
-        return null;
-    }
-
-    private TreeNode identifier() {
-        if (match(Token.IDENTIFIER)) {
-            return new TreeNode("identifier", previousToken().getTokenValue());
-        }
-        return null;
-    }
-
-    private TreeNode statement() {
-        if (match(Token.IF)) {
-            if (match(Token.OPEN_PAREN)) {
-                TreeNode conditionNode = condition();
-                if (conditionNode != null && match(Token.CLOSE_PAREN) && match(Token.OPEN_BRACE)) {
-                    TreeNode trueStatementListNode = statementList();
-                    if (match(Token.CLOSE_BRACE) && match(Token.ELSE) && match(Token.OPEN_BRACE)) {
-                        TreeNode falseStatementListNode = statementList();
-                        if (match(Token.CLOSE_BRACE)) {
-                            return new TreeNode("if_statement", conditionNode, trueStatementListNode, falseStatementListNode);
-                        }
-                    }
-                }
-            }
-        } else if (match(Token.WHILE)) {
-            if (match(Token.OPEN_PAREN)) {
-                TreeNode conditionNode = condition();
-                if (conditionNode != null && match(Token.CLOSE_PAREN) && match(Token.OPEN_BRACE)) {
-                    TreeNode statementListNode = statementList();
-                    if (match(Token.CLOSE_BRACE)) {
-                        return new TreeNode("while_statement", conditionNode, statementListNode);
-                    }
-                }
-            }
+    private void identifier() {
+        // identifier -> [a-zA-Z_][a-zA-Z0-9_]*
+        if (currentToken.getTokenType().equals(Token.IDENTIFIER)) {
+            currentTokenIndex++;
         } else {
-            return assignmentStatement();
+            syntaxError();
         }
-        return null;
     }
 
-    private TreeNode assignmentStatement() {
-        TreeNode identifierNode = identifier();
-        if (identifierNode != null && match(Token.ASSIGNMENT)) {
-            TreeNode expressionNode = expression();
-            if (expressionNode != null && match(Token.SEMICOLON)) {
-                return new TreeNode("assignment_statement", identifierNode, expressionNode);
-            } else {
-                syntaxError = true;
-            }
-        } else {
-            syntaxError = true;
-        }
-        return null;
-    }
-
-    private TreeNode condition() {
-        TreeNode expression1Node = expression();
-        if (expression1Node != null) {
-            TreeNode operatorNode = relationalOperator();
-            if (operatorNode != null) {
-                TreeNode expression2Node = expression();
-                if (expression2Node != null) {
-                    return new TreeNode("condition", expression1Node, operatorNode, expression2Node);
-                }
-            }
-        }
-        return null;
-    }
-
-    private TreeNode relationalOperator() {
-        if (match(Token.LESS_THAN) || match(Token.GREATER_THAN) || match(Token.EQUALS) ||
-                match(Token.NOT_EQUALS) || match(Token.LESS_THAN_OR_EQUAL) || match(Token.GREATER_THAN_OR_EQUAL)) {
-            return new TreeNode("relational_operator", previousToken().getTokenValue());
-        }
-        return null;
-    }
-
-    private TreeNode expression() {
-        TreeNode termNode = term();
-        if (termNode != null) {
-            TreeNode expressionNode = expression();
-            if (expressionNode != null) {
-                return new TreeNode("expression", expressionNode, termNode);
-            } else {
-                return new TreeNode("expression", termNode);
-            }
-        }
-        return null;
-    }
-
-    private TreeNode term() {
-        TreeNode factorNode = factor();
-        if (factorNode != null) {
-            TreeNode termNode = term();
-            if (termNode != null) {
-                return new TreeNode("term", termNode, factorNode);
-            } else {
-                return new TreeNode("term", factorNode);
-            }
-        }
-        return null;
-    }
-
-    private TreeNode factor() {
-        if (match(Token.IDENTIFIER)) {
-            return new TreeNode("identifier", previousToken().getTokenValue());
-        } else if (match(Token.CONSTANT)) {
-            return new TreeNode("constant", previousToken().getTokenValue());
-        } else if (match(Token.OPEN_PAREN)) {
-            TreeNode expressionNode = expression();
-            if (expressionNode != null && match(Token.CLOSE_PAREN)) {
-                return new TreeNode("factor", expressionNode);
-            } else {
-                syntaxError = true;
-            }
-        } else {
-            syntaxError = true;
-        }
-        return null;
-    }
-
-    private TreeNode statementList() {
-        TreeNode statementNode = statement();
-        if (statementNode != null) {
-            TreeNode statementListNode = statementList();
-            if (statementListNode != null) {
-                return new TreeNode("statement_list", statementNode, statementListNode);
-            } else {
-                return new TreeNode("statement_list", statementNode);
-            }
-        }
-        return null;
-    }
-
-    private boolean match(String expectedType) {
+    private void match(String expectedType, String expectedValue) {
+        // Verificar si el tipo y valor del token actual coinciden con los esperados
         if (currentTokenIndex < tokens.size()) {
-            Token currentToken = tokens.get(currentTokenIndex);
-            if (currentToken.getTokenType().equals(expectedType)) {
+            Token token = tokens.get(currentTokenIndex);
+            if (token.getTokenType().equals(expectedType) && token.getTokenValue().equals(expectedValue)) {
                 currentTokenIndex++;
-                return true;
+            } else {
+                syntaxError();
             }
+        } else {
+            syntaxError();
         }
-        return false;
     }
 
-    private Token previousToken() {
-        if (currentTokenIndex > 0) {
-            return tokens.get(currentTokenIndex - 1);
-        }
-        return null;
+    private void syntaxError() {
+        // Se ha encontrado un error de sintaxis
+        syntaxError = true;
+        System.out.println("Error de sintaxis en el token: " + currentToken);
+        // Aquí puedes manejar el error de sintaxis de acuerdo a tus necesidades
     }
 }
