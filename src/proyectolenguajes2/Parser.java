@@ -31,9 +31,15 @@ public class Parser {
     }
 
     private void declarationList() {
+        int cont =0;
         // declaration_list -> declaration declaration_list | ε
         while (currentTokenIndex < tokens.size()) {
             currentToken = tokens.get(currentTokenIndex);
+            System.out.println("Entro here"+ currentToken.toString());
+            cont++;
+            if(cont>1000){
+                break;
+            }
             declaration();
         }
     }
