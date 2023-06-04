@@ -33,10 +33,8 @@ public class Main {
        });
         
         Parser parser = new Parser(tokens);
-        TreeNode syntaxTree = parser.parse();
-        if (syntaxTree != null) {
-            syntaxTree.printTree();
-        }
+        parser.parse();
+        
         
     }
 }

@@ -21,25 +21,19 @@ public class Parser {
     }
 
     public void parse() {
-        // Iniciar el análisis sintáctico
-        program();
-
-        // Verificar si se ha analizado toda la entrada sin errores
-        if (!syntaxError && currentTokenIndex == tokens.size()) {
-            System.out.println("Programa analizado sintácticamente correctamente.");
-        } else {
-            System.out.println("Error de sintaxis: Programa incorrecto.");
-        }
-    }
-
-    private void program() {
-        // program -> declaration_list
         declarationList();
+
+        if (!syntaxError && currentTokenIndex == tokens.size()) {
+            System.out.println("Program successfully parsed.");
+        } else {
+            System.out.println("Syntax error: Program is syntactically incorrect.");
+        }
     }
 
     private void declarationList() {
         // declaration_list -> declaration declaration_list | ε
         while (currentTokenIndex < tokens.size()) {
+            currentToken = tokens.get(currentTokenIndex);
             declaration();
         }
     }
@@ -53,40 +47,41 @@ public class Parser {
 
     private void typeSpecifier() {
         // type_specifier -> 'int' | 'float' | 'char' | 'double'
-        if (currentToken.getTokenType().equals(Token.TYPE_SPECIFIER)) {
-            currentTokenIndex++;
+        if (match(Token.TYPE_SPECIFIER)) {
+            System.out.println("Found type specifier: " + currentToken.getTokenValue());
         } else {
-            syntaxError();
+            syntaxError = true;
         }
     }
 
     private void identifier() {
         // identifier -> [a-zA-Z_][a-zA-Z0-9_]*
-        if (currentToken.getTokenType().equals(Token.IDENTIFIER)) {
-            currentTokenIndex++;
+        if (match(Token.IDENTIFIER)) {
+            System.out.println("Found identifier: " + currentToken.getTokenValue());
         } else {
-            syntaxError();
+            syntaxError = true;
         }
     }
 
-    private void match(String expectedType, String expectedValue) {
-        // Verificar si el tipo y valor del token actual coinciden con los esperados
+    private boolean match(String expectedType, String expectedValue) {
         if (currentTokenIndex < tokens.size()) {
-            Token token = tokens.get(currentTokenIndex);
-            if (token.getTokenType().equals(expectedType) && token.getTokenValue().equals(expectedValue)) {
+            Token currentToken = tokens.get(currentTokenIndex);
+            if (currentToken.getTokenType().equals(expectedType) && currentToken.getTokenValue().equals(expectedValue)) {
                 currentTokenIndex++;
-            } else {
-                syntaxError();
+                return true;
             }
-        } else {
-            syntaxError();
         }
+        return false;
     }
 
-    private void syntaxError() {
-        // Se ha encontrado un error de sintaxis
-        syntaxError = true;
-        System.out.println("Error de sintaxis en el token: " + currentToken);
-        // Aquí puedes manejar el error de sintaxis de acuerdo a tus necesidades
+    private boolean match(String expectedType) {
+        if (currentTokenIndex < tokens.size()) {
+            Token currentToken = tokens.get(currentTokenIndex);
+            if (currentToken.getTokenType().equals(expectedType)) {
+                currentTokenIndex++;
+                return true;
+            }
+        }
+        return false;
     }
 }
