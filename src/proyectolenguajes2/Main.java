@@ -16,25 +16,53 @@ import static proyectolenguajes2.Tokenizer.tokenize;
 public class Main {
    public static void main(String[] args) {
        
-        String cppProgram = "int main() { \n" +
-                            "  int x = 5 ; \n" +
-                            "  if ( x > 0 ) { \n" +
-                            "    x = x + 1 ; \n" +
-                            "  } else { \n" +
-                            "    x = x - 1 ; \n" +
-                            "  } \n" +
-                            "  return 0 ; \n" +
-                            "}";
-        
-        ArrayList<Token> tokens = tokenize(cppProgram);
-        
-        tokens.forEach((token) -> {
-            System.out.println(token);
-       });
-        
-        Parser parser = new Parser(tokens);
-        parser.parse();
-        
+    ArrayList<Token> tokens = new ArrayList<>();
+    tokens.add(new Token(Token.KEYWORD, "int"));
+    tokens.add(new Token(Token.IDENTIFIER, "main"));
+    tokens.add(new Token(Token.OPERATOR, "("));
+    tokens.add(new Token(Token.OPERATOR, ")"));
+    tokens.add(new Token(Token.OPERATOR, "{"));
+    tokens.add(new Token(Token.KEYWORD, "int"));
+    tokens.add(new Token(Token.IDENTIFIER, "x"));
+    tokens.add(new Token(Token.OPERATOR, "="));
+    tokens.add(new Token(Token.CONSTANT, "5"));
+    tokens.add(new Token(Token.OPERATOR, ";"));
+    tokens.add(new Token(Token.KEYWORD, "if"));
+    tokens.add(new Token(Token.OPERATOR, "("));
+    tokens.add(new Token(Token.IDENTIFIER, "x"));
+    tokens.add(new Token(Token.OPERATOR, ">"));
+    tokens.add(new Token(Token.CONSTANT, "0"));
+    tokens.add(new Token(Token.OPERATOR, ")"));
+    tokens.add(new Token(Token.OPERATOR, "{"));
+    tokens.add(new Token(Token.IDENTIFIER, "x"));
+    tokens.add(new Token(Token.OPERATOR, "="));
+    tokens.add(new Token(Token.IDENTIFIER, "x"));
+    tokens.add(new Token(Token.OPERATOR, "+"));
+    tokens.add(new Token(Token.CONSTANT, "1"));
+    tokens.add(new Token(Token.OPERATOR, ";"));
+    tokens.add(new Token(Token.OPERATOR, "}"));
+    tokens.add(new Token(Token.KEYWORD, "else"));
+    tokens.add(new Token(Token.OPERATOR, "{"));
+    tokens.add(new Token(Token.IDENTIFIER, "x"));
+    tokens.add(new Token(Token.OPERATOR, "="));
+    tokens.add(new Token(Token.IDENTIFIER, "x"));
+    tokens.add(new Token(Token.OPERATOR, "-"));
+    tokens.add(new Token(Token.CONSTANT, "1"));
+    tokens.add(new Token(Token.OPERATOR, ";"));
+    tokens.add(new Token(Token.OPERATOR, "}"));
+    tokens.add(new Token(Token.KEYWORD, "return"));
+    tokens.add(new Token(Token.CONSTANT, "0"));
+    tokens.add(new Token(Token.OPERATOR, ";"));
+    tokens.add(new Token(Token.OPERATOR, "}"));
+
+    Parser parser = new Parser(tokens);
+    
+    boolean isSyntaxCorrect = parser.parse();
+    if (isSyntaxCorrect) {
+        System.out.println("El código es sintácticamente correcto.");
+    } else {
+        System.out.println("El código contiene errores sintácticos.");
+    }
         
     }
 }

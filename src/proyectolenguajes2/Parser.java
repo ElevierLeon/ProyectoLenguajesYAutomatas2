@@ -8,188 +8,107 @@ package proyectolenguajes2;
 import java.util.ArrayList;
 
 public class Parser {
-    private final ArrayList<Token> tokens;
+    private ArrayList<Token> tokens;
     private int currentTokenIndex;
-    private Token currentToken;
-    private boolean syntaxError;
+    private TreeNode rootNode;
 
     public Parser(ArrayList<Token> tokens) {
         this.tokens = tokens;
         this.currentTokenIndex = 0;
-        this.currentToken = null;
-        this.syntaxError = false;
+        this.rootNode = null;
     }
 
-    public void parse() {
-        declarationList();
-
-        if (!syntaxError && currentTokenIndex == tokens.size()) {
-            System.out.println("Program successfully parsed.");
-        } else {
-            System.out.println("Syntax error: Program is syntactically incorrect.");
-        }
-    }
-
-    private void declarationList() {
-        // declaration_list -> declaration declaration_list | ε
-        while (currentTokenIndex < tokens.size()) {
-            currentToken = tokens.get(currentTokenIndex);
-         
-            // Check for main function
-            if (match(Token.KEYWORD, "main")) {
-                System.out.println("Found main function");
-                match(Token.OPERATOR, "(");
-                match(Token.OPERATOR, ")");
-                match(Token.OPERATOR, "{");
-                statementList();
-                match(Token.OPERATOR, "}");
-            } else {
-                declaration();
-            }
-        }
-    }
-
-    private void declaration() {
-        // declaration -> type_specifier identifier ';'
-        typeSpecifier();
-        identifier();
-        match(Token.OPERATOR, ";");
-    }
-
-    private void typeSpecifier() {
-        // type_specifier -> 'int' | 'float' | 'char' | 'double'
-        if (match(Token.TYPE_SPECIFIER)) {
-            System.out.println("Found type specifier: " + currentToken.getTokenValue());
-        } else {
-            syntaxError = true;
-        }
-    }
-
-    private void identifier() {
-        // identifier -> [a-zA-Z_][a-zA-Z0-9_]*
-        if (match(Token.IDENTIFIER)) {
-            System.out.println("Found identifier: " + currentToken.getTokenValue());
-        } else {
-            syntaxError = true;
-        }
-    }
-
-    private void statementList() {
-        // statement_list -> statement statement_list | ε
-        while (currentTokenIndex < tokens.size() && !currentToken.getTokenValue().equals("}")) {
-            statement();
-        }
-    }
-
-    private void statement() {
-        // statement -> assignment_statement | if_statement | while_statement | declaration
-        if (match(Token.KEYWORD, "if")) {
-            ifStatement();
-        } else if (match(Token.KEYWORD, "while")) {
-            whileStatement();
-        } else if (match(Token.TYPE_SPECIFIER)) {
-            declaration();
-        } else {
-            assignmentStatement();
-        }
-    }
-
-    private void assignmentStatement() {
-        // assignment_statement -> identifier '=' expression ';'
-        identifier();
-        match(Token.OPERATOR, "=");
-        expression();
-        match(Token.OPERATOR, ";");
-    }
-
-    private void ifStatement() {
-        // if_statement -> 'if' '(' condition ')' '{' statement_list '}' 'else' '{' statement_list '}'
-        match(Token.OPERATOR, "(");
-        condition();
-        match(Token.OPERATOR, ")");
-        match(Token.OPERATOR, "{");
-        statementList();
-        match(Token.OPERATOR, "}");
-        match(Token.KEYWORD, "else");
-        match(Token.OPERATOR, "{");
-        statementList();
-        match(Token.OPERATOR, "}");
-    }
-
-    private void whileStatement() {
-        // while_statement -> 'while' '(' condition ')' '{' statement_list '}'
-        match(Token.OPERATOR, "(");
-        condition();
-        match(Token.OPERATOR, ")");
-        match(Token.OPERATOR, "{");
-        statementList();
-        match(Token.OPERATOR, "}");
-    }
-
-    private void condition() {
-        // condition -> expression relational_operator expression
-        expression();
-        relationalOperator();
-        expression();
-    }
-
-    private void expression() {
-        // expression -> term | expression additive_operator term
-        term();
-        while (match(Token.OPERATOR, "+") || match(Token.OPERATOR, "-")) {
-            term();
-        }
-    }
-
-    private void term() {
-        // term -> factor | term multiplicative_operator factor
-        factor();
-        while (match(Token.OPERATOR, "*") || match(Token.OPERATOR, "/")) {
-            factor();
-        }
-    }
-
-    private void factor() {
-        // factor -> identifier | constant | '(' expression ')'
-        if (match(Token.IDENTIFIER) || match(Token.CONSTANT)) {
-            // Do nothing
-        } else if (match(Token.OPERATOR, "(")) {
-            expression();
-            match(Token.OPERATOR, ")");
-        } else {
-            syntaxError = true;
-        }
-    }
-
-    private void relationalOperator() {
-        // relational_operator -> '<' | '>' | '==' | '!=' | '<=' | '>='
-        match(Token.OPERATOR);
-    }
-
-    private boolean match(String expectedType, String expectedValue) {
-        if (currentTokenIndex < tokens.size()) {
-            Token currentToken = tokens.get(currentTokenIndex);
-            
-
-            if (currentToken.getTokenType().equals(expectedType) && currentToken.getTokenValue().equals(expectedValue)) {
-                System.out.println(currentToken.getTokenType().equals(expectedType));
-                 System.out.println(currentToken.getTokenValue().equals(expectedValue));
-                currentTokenIndex++;
-                
-                return true;
-            }
+    public boolean parse() {
+        rootNode = new TreeNode("program");
+        if (match(Token.KEYWORD, "int") && match(Token.IDENTIFIER, "main") && match(Token.OPERATOR, "(") &&
+                match(Token.OPERATOR, ")") && match(Token.OPERATOR, "{") && declarationList(rootNode) &&
+                match(Token.KEYWORD, "return") && match(Token.CONSTANT, "0") && match(Token.OPERATOR, ";") &&
+                match(Token.OPERATOR, "}")) {
+            return currentTokenIndex == tokens.size();
         }
         return false;
     }
 
-    private boolean match(String expectedType) {
+    private boolean match(String expectedTokenType, String expectedTokenValue) {
         if (currentTokenIndex < tokens.size()) {
             Token currentToken = tokens.get(currentTokenIndex);
-            if (currentToken.getTokenType().equals(expectedType)) {
+            if (currentToken.getTokenType().equals(expectedTokenType) &&
+                    currentToken.getTokenValue().equals(expectedTokenValue)) {
                 currentTokenIndex++;
                 return true;
             }
         }
         return false;
+    }
+    
+    private boolean match(String expectedTokenType) {
+        if (currentTokenIndex < tokens.size()) {
+            Token currentToken = tokens.get(currentTokenIndex);
+            if (currentToken.getTokenType().equals(expectedTokenType)) {
+                currentTokenIndex++;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean declarationList(TreeNode parentNode) {
+        TreeNode declarationListNode = new TreeNode("declaration_list");
+        if (declaration(declarationListNode)) {
+            parentNode.addChild(declarationListNode);
+            if (declarationList(parentNode)) {
+                return true;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean declaration(TreeNode parentNode) {
+        TreeNode declarationNode = new TreeNode("declaration");
+        if (typeSpecifier(declarationNode) && match(Token.IDENTIFIER) && match(Token.OPERATOR, "=") &&
+                match(Token.CONSTANT) && match(Token.OPERATOR, ";")) {
+            parentNode.addChild(declarationNode);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean typeSpecifier(TreeNode parentNode) {
+        Token currentToken = getCurrentToken();
+        if (match(Token.KEYWORD, "int")) {
+            parentNode.addChild(new TreeNode(currentToken.getTokenValue()));
+            return true;
+        }
+        return false;
+    }
+
+    private Token getCurrentToken() {
+        if (currentTokenIndex < tokens.size()) {
+            return tokens.get(currentTokenIndex);
+        }
+        return null;
+    }
+
+    private static class TreeNode {
+        private String label;
+        private ArrayList<TreeNode> children;
+
+        public TreeNode(String label) {
+            this.label = label;
+            this.children = new ArrayList<>();
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public ArrayList<TreeNode> getChildren() {
+            return children;
+        }
+
+        public void addChild(TreeNode child) {
+            children.add(child);
+        }
     }
 }
