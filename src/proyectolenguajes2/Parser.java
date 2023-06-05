@@ -5,10 +5,6 @@
  */
 package proyectolenguajes2;
 import java.util.ArrayList;
-import java.util.List;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Parser {
     private ArrayList<Token> tokens;
@@ -82,9 +78,13 @@ public class Parser {
 
     private boolean declaration(TreeNode parentNode) {
         TreeNode declarationNode = new TreeNode("declaration");
-        if (typeSpecifier(declarationNode) && match(Token.IDENTIFIER) && match(Token.OPERATOR, "=") && expression(declarationNode) && match(Token.OPERATOR, ";")) {
-            parentNode.addChild(declarationNode);
-            return true;
+        if (typeSpecifier(declarationNode) && match(Token.IDENTIFIER)) {
+            if (match(Token.OPERATOR, "=") && expression(declarationNode) && match(Token.OPERATOR, ";")) {
+                parentNode.addChild(declarationNode);
+                return true;
+            } else {
+                return false;
+            }
         }
         return false;
     }
@@ -180,7 +180,7 @@ public class Parser {
 
     private class TreeNode {
         private String name;
-        private List<TreeNode> children;
+        private ArrayList<TreeNode> children;
 
         public TreeNode(String name) {
             this.name = name;
@@ -191,7 +191,7 @@ public class Parser {
             return name;
         }
 
-        public List<TreeNode> getChildren() {
+        public ArrayList<TreeNode> getChildren() {
             return children;
         }
 

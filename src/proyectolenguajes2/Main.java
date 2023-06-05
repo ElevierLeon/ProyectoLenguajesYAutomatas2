@@ -17,6 +17,7 @@ public class Main {
    public static void main(String[] args) {
 
     ArrayList<Token> tokens = new ArrayList<>();
+    /* 
     tokens.add(new Token(Token.KEYWORD, "int"));
     tokens.add(new Token(Token.IDENTIFIER, "x"));
     tokens.add(new Token(Token.OPERATOR, "="));
@@ -31,6 +32,26 @@ public class Main {
     tokens.add(new Token(Token.OPERATOR, "+"));
     tokens.add(new Token(Token.CONSTANT, "3.14"));
     tokens.add(new Token(Token.OPERATOR, ";"));
+*/
+/* */
+    // Tokens para declaración IF
+    tokens.add(new Token(Token.KEYWORD, "int"));
+    tokens.add(new Token(Token.IDENTIFIER, "a"));
+    tokens.add(new Token(Token.OPERATOR, "="));
+    tokens.add(new Token(Token.CONSTANT, "10"));
+    tokens.add(new Token(Token.OPERATOR, ";"));
+    tokens.add(new Token(Token.KEYWORD, "if"));
+    tokens.add(new Token(Token.OPERATOR, "("));
+    tokens.add(new Token(Token.IDENTIFIER, "a"));
+    tokens.add(new Token(Token.OPERATOR, "=="));
+    tokens.add(new Token(Token.CONSTANT, "10"));
+    tokens.add(new Token(Token.OPERATOR, ")"));
+    tokens.add(new Token(Token.OPERATOR, "{"));
+    tokens.add(new Token(Token.IDENTIFIER, "a"));
+    tokens.add(new Token(Token.OPERATOR, "="));
+    tokens.add(new Token(Token.CONSTANT, "20"));
+    tokens.add(new Token(Token.OPERATOR, ";"));
+    tokens.add(new Token(Token.OPERATOR, "}"));
 
     Parser parser = new Parser(tokens);
     boolean isSyntaxValid = parser.parse();
