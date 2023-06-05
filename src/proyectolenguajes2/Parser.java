@@ -34,7 +34,7 @@ public class Parser {
         // declaration_list -> declaration declaration_list | ε
         while (currentTokenIndex < tokens.size()) {
             currentToken = tokens.get(currentTokenIndex);
-            //System.out.println(currentToken.toString());
+         
             // Check for main function
             if (match(Token.KEYWORD, "main")) {
                 System.out.println("Found main function");
@@ -169,8 +169,13 @@ public class Parser {
     private boolean match(String expectedType, String expectedValue) {
         if (currentTokenIndex < tokens.size()) {
             Token currentToken = tokens.get(currentTokenIndex);
+            
+
             if (currentToken.getTokenType().equals(expectedType) && currentToken.getTokenValue().equals(expectedValue)) {
+                System.out.println(currentToken.getTokenType().equals(expectedType));
+                 System.out.println(currentToken.getTokenValue().equals(expectedValue));
                 currentTokenIndex++;
+                
                 return true;
             }
         }
