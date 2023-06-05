@@ -27,7 +27,7 @@ public class Parser {
 
     public void printSyntaxTree() {
         if (rootNode != null) {
-            printSyntaxTree(rootNode, 0);
+            printSyntaxTree(rootNode, "");
         }
     }
 
@@ -39,11 +39,11 @@ public class Parser {
                 currentTokenIndex++;
                 return true;
             } else {
-                System.out.println("Error sintáctico: Se esperaba '" + expectedTokenValue + "' en lugar de '" + currentToken.getTokenValue() + "'");
+               // System.out.println("Error sintáctico: Se esperaba '" + expectedTokenValue + "' en lugar de '" + currentToken.getTokenValue() + "'");
                 return false;
             }
         } else {
-            System.out.println("Error sintáctico: Se esperaba '" + expectedTokenValue + "' pero no hay más tokens disponibles");
+            //System.out.println("Error sintáctico: Se esperaba '" + expectedTokenValue + "' pero no hay más tokens disponibles");
             return false;
         }
     }
@@ -55,11 +55,11 @@ public class Parser {
                 currentTokenIndex++;
                 return true;
             } else {
-                System.out.println("Error sintáctico: Se esperaba un token de tipo '" + expectedTokenType + "' en lugar de un token de tipo '" + currentToken.getTokenType() + "'");
+              //  System.out.println("Error sintáctico: Se esperaba un token de tipo '" + expectedTokenType + "' en lugar de un token de tipo '" + currentToken.getTokenType() + "'");
                 return false;
             }
         } else {
-            System.out.println("Error sintáctico: Se esperaba un token de tipo '" + expectedTokenType + "' pero no hay más tokens disponibles");
+            //System.out.println("Error sintáctico: Se esperaba un token de tipo '" + expectedTokenType + "' pero no hay más tokens disponibles");
             return false;
         }
     }
@@ -68,12 +68,9 @@ public class Parser {
         TreeNode declarationListNode = new TreeNode("declaration_list");
         if (declaration(declarationListNode)) {
             parentNode.addChild(declarationListNode);
-            if (declarationList(parentNode)) {
-                return true;
-            }
-            return true;
+            return declarationList(parentNode);
         }
-        return false;
+        return true;
     }
 
     private boolean declaration(TreeNode parentNode) {
@@ -82,6 +79,22 @@ public class Parser {
             if (match(Token.OPERATOR, "=") && expression(declarationNode) && match(Token.OPERATOR, ";")) {
                 parentNode.addChild(declarationNode);
                 return true;
+            } else {
+                return false;
+            }
+        } else if (match(Token.KEYWORD, "if")) {
+            TreeNode ifStatementNode = new TreeNode("if_statement");
+            if (match(Token.OPERATOR, "(") && expression(ifStatementNode) && match(Token.OPERATOR, ")") && match(Token.OPERATOR, "{")) {
+                if (declarationList(ifStatementNode)) {
+                    if (match(Token.OPERATOR, "}")) {
+                        parentNode.addChild(ifStatementNode);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }
@@ -167,14 +180,11 @@ public class Parser {
         return match(Token.KEYWORD, "int") || match(Token.KEYWORD, "float");
     }
 
-    private void printSyntaxTree(TreeNode node, int depth) {
-        for (int i = 0; i < depth; i++) {
-            System.out.print("  ");
-        }
-        System.out.println(node.getName());
+    private void printSyntaxTree(TreeNode node, String indent) {
+        System.out.println(indent + node.getName());
 
         for (TreeNode child : node.getChildren()) {
-            printSyntaxTree(child, depth + 1);
+            printSyntaxTree(child, indent + "  ");
         }
     }
 
