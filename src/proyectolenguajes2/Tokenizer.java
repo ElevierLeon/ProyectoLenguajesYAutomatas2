@@ -37,10 +37,12 @@ public class Tokenizer {
             return new Token(Token.OPERATOR, word);
         } else if (isConstant(word)) {
             return new Token(Token.CONSTANT, word);
+        } else if (isMain(word)) {
+            return new Token(Token.KEYWORD, word);
         } else if (!word.isEmpty()) {
             return new Token(Token.UNKNOWN, word);
         }
-
+    
         return null;
     }
 
@@ -68,5 +70,10 @@ public class Tokenizer {
         String pattern = "[0-9]+";
         return word.matches(pattern);
     }
+    private static boolean isMain(String word) {
+        String pattern = "main";
+        return word.equals(pattern);
+    }
+    
 
 }
