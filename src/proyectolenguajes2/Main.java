@@ -22,6 +22,15 @@ public class Main {
     tokens.add(new Token(Token.OPERATOR, "="));
     tokens.add(new Token(Token.CONSTANT, "5"));
     tokens.add(new Token(Token.OPERATOR, ";"));
+    
+    // Agregar tokens para otra declaración válida
+    tokens.add(new Token(Token.KEYWORD, "float"));
+    tokens.add(new Token(Token.IDENTIFIER, "y"));
+    tokens.add(new Token(Token.OPERATOR, "="));
+    tokens.add(new Token(Token.IDENTIFIER, "x"));
+    tokens.add(new Token(Token.OPERATOR, "+"));
+    tokens.add(new Token(Token.CONSTANT, "3.14"));
+    tokens.add(new Token(Token.OPERATOR, ";"));
 
     Parser parser = new Parser(tokens);
     boolean isSyntaxValid = parser.parse();
